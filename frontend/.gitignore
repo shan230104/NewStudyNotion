@@ -1,0 +1,11 @@
+# Frontend specific ignores
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+node_modules/
+build/
+dist/
+out/ # For Next.js
+.next/ # For Next.js
