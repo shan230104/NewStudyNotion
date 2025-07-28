@@ -8,7 +8,6 @@ const { passwordUpdated } = require('../mail/templates/passwordUpdate');
 const Profile = require('../models/Profile');
 require('dotenv').config();
 
-// Send OTP for email verification
 exports.sendotp = async (req, res) => {
     try {
 
@@ -43,12 +42,33 @@ exports.sendotp = async (req, res) => {
             otp = otpGenerator.generate(6, {
                 upperCaseAlpahbets: false,
             });
+            result = await OTP.findOne({otp: otp});
         }
 
         const otpPayload = {email, otp};
         //create an entry for OTP 
         const otpBody  = await OTP.create(otpPayload);
         console.log('OTP Body', otpBody);
+
+        //IMPORTANT: ADD THE EMAIL SENDING LOGIC HERE
+        try {
+            const mailResponse = await mailSender(
+                email,
+                "Verification OTP for StudyNotion", // Email Subject
+                `<p>Your OTP for StudyNotion verification is: <strong>${otp}</strong></p>` // Email Body (HTML)
+            );
+            console.log("Email sent successfully: ", mailResponse);
+        } catch (mailError) {
+            console.error("Error sending email: ", mailError);
+            // It's crucial to handle email sending failures gracefully.
+            // You might want to delete the created OTP if email fails, or return a specific error.
+            return res.status(500).json({
+                success: false,
+                message: "Could not send OTP. Please try again.",
+                error: mailError.message, // Provide error details for debugging
+            });
+        }
+        //
 
         //return response successfully
         res.status(200).json({
